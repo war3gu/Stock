@@ -31,8 +31,8 @@ class Predict:
         files = [os.path.join('./stock_data', f) for f in os.listdir('./stock_data')]
         for file in files:
             print(file)
-            df = pd.read_csv(file, index_col='Date', parse_dates=True)
-            df = df[['Open','High','Low','Close','Volume']]
+            df = pd.read_csv(file, index_col='trade_date', parse_dates=True)
+            df = df[['open','high','low','close','vol']]
             df = ((df -
             df.rolling(num_historical_days).mean().shift(-num_historical_days))
             /(df.rolling(num_historical_days).max().shift(-num_historical_days)

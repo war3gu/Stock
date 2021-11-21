@@ -30,8 +30,8 @@ class TrainXGBBoost:
             for file in files:
                 print(file)
                 #Read in file -- note that parse_dates will be need later
-                df = pd.read_csv(file, index_col='Date', parse_dates=True)
-                df = df[['Open','High','Low','Close','Volume']]
+                df = pd.read_csv(file, index_col='trade_date', parse_dates=True)
+                df = df[['open','high','low','close','vol']]
                 # #Create new index with missing days
                 # idx = pd.date_range(df.index[-1], df.index[0])
                 # #Reindex and fill the missing day with the value from the day before
@@ -51,14 +51,14 @@ class TrainXGBBoost:
                 df = df[400:]
                 #This may not create good samples if num_historical_days is a
                 #mutliple of 7
-                data = df[['Open', 'High', 'Low', 'Close', 'Volume']].values
+                data = df[['open', 'high', 'low', 'close', 'vol']].values
                 labels = df['labels'].values
                 for i in range(num_historical_days, len(df), num_historical_days):
                     features = sess.run(gan.features, feed_dict={gan.X:[data[i-num_historical_days:i]]})
                     self.data.append(features[0])
                     print(features[0])
                     self.labels.append(labels[i-1])
-                data = test_df[['Open', 'High', 'Low', 'Close', 'Volume']].values
+                data = test_df[['open', 'high', 'low', 'close', 'vol']].values
                 labels = test_df['labels'].values
                 for i in range(num_historical_days, len(test_df), 1):
                     features = sess.run(gan.features, feed_dict={gan.X:[data[i-num_historical_days:i]]})
