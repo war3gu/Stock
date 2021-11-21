@@ -1,0 +1,9 @@
+,ts_code,trade_date,open,high,low,close,pre_close,change,pct_chg,vol,amount
+
+
+
+
+get_predictions.py 和  train_xgb_boost.py 是两个入口文件
+
+train_xgb_boost是训练xgb，并用图形展示
+get_predictions是使用训练好的模型进行预测

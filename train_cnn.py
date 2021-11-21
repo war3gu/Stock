@@ -22,7 +22,7 @@ class TrainCNN:
         for file in files:
             print(file)
             df = pd.read_csv(file, index_col='Date', parse_dates=True)
-            df = df[['Open','High','Low','Close','Volume']]
+            df = df[['open','high','low','close','vol']]
             labels = df.Close.pct_change(days).map(lambda x: [int(x > pct_change/100.0), int(x <= pct_change/100.0)])
             df = ((df -
             df.rolling(num_historical_days).mean().shift(-num_historical_days))

@@ -13,9 +13,12 @@ class TrainGan:
         files = [os.path.join('./stock_data', f) for f in os.listdir('./stock_data')]
         for file in files:
             print(file)
+            ext = os.path.splitext(file)[-1]
+            if ext != '.csv':
+                continue
             #Read in file -- note that parse_dates will be need later
-            df = pd.read_csv(file, index_col='Date', parse_dates=True)
-            df = df[['Open','High','Low','Close','Volume']]
+            df = pd.read_csv(file, index_col='trade_date', parse_dates=True)
+            df = df[['open','high','low','close','vol']]
             # #Create new index with missing days
             # idx = pd.date_range(df.index[-1], df.index[0])
             # #Reindex and fill the missing day with the value from the day before
@@ -46,7 +49,7 @@ class TrainGan:
                 yield batch
                 batch = []
 
-    def train(self, print_steps=100, display_data=100, save_steps=1000):
+    def train(self, print_steps=100, display_data=100, save_steps=500):
         if not os.path.exists('./models'):
             os.makedirs('./models')
         sess = tf.Session()
@@ -56,9 +59,14 @@ class TrainGan:
         D_l2_loss = 0
         sess.run(tf.global_variables_initializer())
         saver = tf.train.Saver()
-        with open('./models/checkpoint', 'rb') as f:
-            model_name = next(f).split('"')[1]
-        saver.restore(sess, "./models/{}".format(model_name))
+        if os.path.exists('./models/checkpoint'):
+            with open('./models/checkpoint', 'rb') as f:
+                cc = str(next(f))
+                dd = cc.split('"')
+                model_name = dd[1]
+                saver.restore(sess, "./models/{}".format(model_name))
+        else:
+            print('no checkpoint')
         for i, X in enumerate(self.random_batch(self.batch_size)):
             if i % 1 == 0:
                 _, D_loss_curr, D_l2_loss_curr = sess.run([self.gan.D_solver, self.gan.D_loss, self.gan.D_l2_loss], feed_dict=
