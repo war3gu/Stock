@@ -1,6 +1,0 @@
-model_checkpoint_path: "gan.ckpt-41499"
-all_model_checkpoint_paths: "gan.ckpt-39499"
-all_model_checkpoint_paths: "gan.ckpt-39999"
-all_model_checkpoint_paths: "gan.ckpt-40499"
-all_model_checkpoint_paths: "gan.ckpt-40999"
-all_model_checkpoint_paths: "gan.ckpt-41499"
