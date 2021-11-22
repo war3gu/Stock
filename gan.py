@@ -2,9 +2,11 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import random
 
 SEED = 42
-tf.set_random_seed(SEED)
+random.seed(42)
+#tf.random.set_seed(SEED)
 
 class GAN():
 

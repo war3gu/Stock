@@ -40,7 +40,7 @@ def download(i, symbol, url, output):
 	if df1 is not None:
 		df = df1.append(df2)
 
-	df.sort_values(by=FIELD_DATE, ascending=True, inplace=True)  # inplace is important
+	df.sort_values(by=FIELD_DATE, ascending=False, inplace=True)  # inplace is important
 
 	df = df.reset_index(drop=True)
 

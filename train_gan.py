@@ -18,25 +18,40 @@ class TrainGan:
                 continue
             #Read in file -- note that parse_dates will be need later
             df = pd.read_csv(file, index_col='trade_date', parse_dates=True)
+            print('record')
             df = df[['open','high','low','close','vol']]
             # #Create new index with missing days
             # idx = pd.date_range(df.index[-1], df.index[0])
             # #Reindex and fill the missing day with the value from the day before
             # df = df.reindex(idx, method='bfill').sort_index(ascending=False)
             #Normilize using a of size num_historical_days
-            df = ((df -
-            df.rolling(num_historical_days).mean().shift(-num_historical_days))
-            /(df.rolling(num_historical_days).max().shift(-num_historical_days)
-            -df.rolling(num_historical_days).min().shift(-num_historical_days)))
+            roll = df.rolling(num_historical_days)   #定义num_historical_days个元素的移动窗口
+
+            rollMean = roll.mean()                   #前num_historical_days-1个皆为nan
+            rollMeanShi = rollMean.shift(-num_historical_days+1) #将nan行移除掉。此处的num_historical_days应该要减一，等以后模型稳定了再试试
+
+            rollMax = roll.max()                     #前num_historical_days-1个皆为nan
+            rollMaxShi = rollMax.shift(-num_historical_days+1)
+
+            rollMin = roll.min()
+            rollMinShi = rollMin.shift(-num_historical_days+1)
+
+            uu = (df - rollMeanShi)
+            dd = (rollMaxShi - rollMinShi)
+            df = uu/dd      #使用移动窗口归一化
             #Drop the last 10 day that we don't have data for
             df = df.dropna()
             #Hold out the last year of trading for testing
             #Padding to keep labels from bleeding
+            #取400天前的数据进行训练。前面的数据靠近现在,留作测试
             df = df[400:]
             #This may not create good samples if num_historical_days is a
             #mutliple of 7
             for i in range(num_historical_days, len(df), num_historical_days):
-                self.data.append(df.values[i-num_historical_days:i])
+                starti = i-num_historical_days
+                endi = i
+                wini = df.values[starti:endi]     #num_historical_days个一组
+                self.data.append(wini)
 
         self.gan = GAN(num_features=5, num_historical_days=num_historical_days,
                         generator_input_size=200)
