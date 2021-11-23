@@ -2,9 +2,12 @@ import os
 import pandas as pd
 from gan import GAN
 import random
-import tensorflow as tf
+
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
 import xgboost as xgb
-from sklearn.externals import joblib
+import joblib
 from sklearn.metrics import confusion_matrix
 from plot_confusion_matrix import plot_confusion_matrix
 
