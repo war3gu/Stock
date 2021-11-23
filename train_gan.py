@@ -2,7 +2,8 @@ import os
 import pandas as pd
 from gan import GAN
 import random
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 random.seed(42)
 class TrainGan:
