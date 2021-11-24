@@ -68,7 +68,7 @@ class TrainGan:
     def train(self, print_steps=100, display_data=100, save_steps=500):
         if not os.path.exists('./models'):
             os.makedirs('./models')
-        sess = tf.Session()
+        sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
         G_loss = 0
         D_loss = 0
         G_l2_loss = 0
