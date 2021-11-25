@@ -1,4 +1,7 @@
 import tensorflow.compat.v1 as tf
+
+import defines
+
 tf.disable_v2_behavior()
 import numpy as np
 import matplotlib.pyplot as plt
@@ -80,7 +83,7 @@ class GAN():
 
             v3, m3, beta3, gamma3 = get_batch_norm_with_global_normalization_vars(128)
 
-            W1 = tf.Variable(tf.truncated_normal([18*1*128, 128]))
+            W1 = tf.Variable(tf.truncated_normal([defines.def_dummy_steps*1*128, 128]))
             b4 = tf.Variable(tf.truncated_normal([128]))
 
             v4, m4, beta4, gamma4 = get_batch_norm_with_global_normalization_vars(128)
@@ -126,7 +129,9 @@ class GAN():
             if is_train:
                 flattened_convolution =  tf.nn.dropout(flattened_convolution, keep_prob=0.8)
 
-            h1 = tf.nn.relu(tf.matmul(flattened_convolution, W1) + b4)
+            eee = tf.matmul(flattened_convolution, W1)
+            rrr = eee + b4
+            h1 = tf.nn.relu(rrr)
 
             # h1 = tf.nn.batch_norm_with_global_normalization(h1, v4, m4,
             #         beta4, gamma4, variance_epsilon=0.000001, scale_after_normalization=False)

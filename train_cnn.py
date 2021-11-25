@@ -8,6 +8,8 @@ from sklearn.externals import joblib
 from sklearn.metrics import confusion_matrix
 from plot_confusion_matrix import plot_confusion_matrix
 
+import defines
+
 random.seed(42)
 
 class TrainCNN:
@@ -17,12 +19,12 @@ class TrainCNN:
         self.labels = []
         self.test_data = []
         self.test_labels = []
-        self.cnn = CNN(num_features=5, num_historical_days=num_historical_days, is_train=False)
+        self.cnn = CNN(num_features=defines.def_num_features, num_historical_days=num_historical_days, is_train=False)
         files = [os.path.join('./stock_data', f) for f in os.listdir('./stock_data')]
         for file in files:
             print(file)
             df = pd.read_csv(file, index_col='Date', parse_dates=True)
-            df = df[['open','high','low','close','vol']]
+            df = df[defines.def_stock_features]
             labels = df.Close.pct_change(days).map(lambda x: [int(x > pct_change/100.0), int(x <= pct_change/100.0)])
             df = ((df -
             df.rolling(num_historical_days).mean().shift(-num_historical_days))
@@ -32,12 +34,12 @@ class TrainCNN:
             df = df.dropna()
             test_df = df[:365]
             df = df[400:]
-            data = df[['Open', 'High', 'Low', 'Close', 'Volume']].values
+            data = df[defines.def_stock_features].values
             labels = df['labels'].values
             for i in range(num_historical_days, len(df), num_historical_days):
                 self.data.append(data[i-num_historical_days:i])
                 self.labels.append(labels[i-1])
-            data = test_df[['Open', 'High', 'Low', 'Close', 'Volume']].values
+            data = test_df[defines.def_stock_features].values
             labels = test_df['labels'].values
             for i in range(num_historical_days, len(test_df), 1):
                 self.test_data.append(data[i-num_historical_days:i])
@@ -113,5 +115,5 @@ class TrainCNN:
 
 
 if __name__ == '__main__':
-    cnn = TrainCNN(num_historical_days=20, days=10, pct_change=10)
+    cnn = TrainCNN(num_historical_days=defines.def_num_historical_days, days=10, pct_change=10)
     cnn.train()

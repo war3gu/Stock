@@ -13,12 +13,14 @@ import tensorflow as tf
 import xgboost as xgb
 from sklearn.externals import joblib
 
+import defines
+
 
 os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 class Predict:
 
-    def __init__(self, num_historical_days=20, days=10, pct_change=0, gan_model='./deployed_models/gan', cnn_modle='./deployed_models/cnn', xgb_model='./deployed_models/xgb'):
+    def __init__(self, num_historical_days=defines.def_num_historical_days, days=10, pct_change=0, gan_model='./deployed_models/gan', cnn_modle='./deployed_models/cnn', xgb_model='./deployed_models/xgb'):
         self.data = []
         self.num_historical_days = num_historical_days
         self.gan_model = gan_model
@@ -32,7 +34,7 @@ class Predict:
         for file in files:
             print(file)
             df = pd.read_csv(file, index_col='trade_date', parse_dates=True)
-            df = df[['open','high','low','close','vol']]
+            df = df[defines.def_stock_features]
             df = ((df -
             df.rolling(num_historical_days).mean().shift(-num_historical_days))
             /(df.rolling(num_historical_days).max().shift(-num_historical_days)
@@ -43,7 +45,7 @@ class Predict:
 
     def gan_predict(self):
     	tf.reset_default_graph()
-        gan = GAN(num_features=5, num_historical_days=self.num_historical_days,
+        gan = GAN(num_features=defines.def_num_features, num_historical_days=self.num_historical_days,
                         generator_input_size=200, is_train=False)
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())

@@ -5,22 +5,27 @@ import random
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
+
+import defines
+
 random.seed(42)
 class TrainGan:
 
     def __init__(self, num_historical_days, batch_size=128):
         self.batch_size = batch_size
         self.data = []
-        files = [os.path.join('./stock_data', f) for f in os.listdir('./stock_data')]
+        files = ["./stock_data/{}.csv".format(f) for f in defines.def_stock_arr]
         for file in files:
             print(file)
-            ext = os.path.splitext(file)[-1]
-            if ext != '.csv':
-                continue
+
+            #ext = os.path.splitext(file)[-1]
+            #if ext != '.csv':
+                #continue
+
             #Read in file -- note that parse_dates will be need later
             df = pd.read_csv(file, index_col='trade_date', parse_dates=True)
             print('record')
-            df = df[['open','high','low','close','vol']]
+            df = df[defines.def_stock_features]
             # #Create new index with missing days
             # idx = pd.date_range(df.index[-1], df.index[0])
             # #Reindex and fill the missing day with the value from the day before
@@ -54,7 +59,7 @@ class TrainGan:
                 wini = df.values[starti:endi]     #num_historical_days个一组
                 self.data.append(wini)
 
-        self.gan = GAN(num_features=5, num_historical_days=num_historical_days,
+        self.gan = GAN(num_features=defines.def_num_features, num_historical_days=num_historical_days,
                         generator_input_size=200)
 
     def random_batch(self, batch_size=128):
@@ -83,6 +88,11 @@ class TrainGan:
                 saver.restore(sess, "./models/{}".format(model_name))
         else:
             print('no checkpoint')
+
+        writer = tf.summary.FileWriter('/log', tf.get_default_graph())
+
+        writer.close()
+
         for i, X in enumerate(self.random_batch(self.batch_size)):
             if i % 1 == 0:
                 _, D_loss_curr, D_l2_loss_curr = sess.run([self.gan.D_solver, self.gan.D_loss, self.gan.D_l2_loss], feed_dict=
@@ -111,5 +121,5 @@ class TrainGan:
 
 
 if __name__ == '__main__':
-    gan = TrainGan(20, 128)
+    gan = TrainGan(defines.def_num_historical_days, 128)
     gan.train()

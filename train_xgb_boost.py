@@ -11,6 +11,8 @@ import joblib
 from sklearn.metrics import confusion_matrix
 from plot_confusion_matrix import plot_confusion_matrix
 
+import defines
+
 os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 class TrainXGBBoost:
@@ -21,7 +23,7 @@ class TrainXGBBoost:
         self.test_data = []
         self.test_labels = []
         assert os.path.exists('./models/checkpoint')
-        gan = GAN(num_features=5, num_historical_days=num_historical_days,
+        gan = GAN(num_features=defines.def_num_features, num_historical_days=num_historical_days,
                         generator_input_size=200, is_train=False)
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -29,15 +31,18 @@ class TrainXGBBoost:
             with open('./models/checkpoint', 'rb') as f:
                 model_name = str(next(f)).split('"')[1]
             saver.restore(sess, "./models/{}".format(model_name))
-            files = [os.path.join('./stock_data', f) for f in os.listdir('./stock_data')]
+
+            files = ["./stock_data/{}.csv".format(f) for f in defines.def_stock_arr]
             for file in files:
                 print(file)
-                ext = os.path.splitext(file)[-1]
-                if ext != '.csv':
-                    continue
+
+                #ext = os.path.splitext(file)[-1]
+                #if ext != '.csv':
+                    #continue
+
                 #Read in file -- note that parse_dates will be need later
                 df = pd.read_csv(file, index_col='trade_date', parse_dates=True)
-                df = df[['open','high','low','close','vol']]
+                df = df[defines.def_stock_features]
                 # #Create new index with missing days
                 # idx = pd.date_range(df.index[-1], df.index[0])
                 # #Reindex and fill the missing day with the value from the day before
@@ -61,7 +66,7 @@ class TrainXGBBoost:
                 df = df[400:]
                 #This may not create good samples if num_historical_days is a
                 #mutliple of 7
-                data = df[['open', 'high', 'low', 'close', 'vol']].values
+                data = df[defines.def_stock_features].values
                 labels = df['labels'].values
                 for i in range(num_historical_days, len(df), num_historical_days):  #步长num_historical_days是不是太长了
                     starti = i-num_historical_days #窗口起始索引
@@ -73,9 +78,9 @@ class TrainXGBBoost:
                     self.data.append(features[0])
                     self.labels.append(labi)
 
-                    print(features[0])
-                    print(labi)
-                data = test_df[['open', 'high', 'low', 'close', 'vol']].values
+                    #print(features[0])
+                    #print(labi)
+                data = test_df[defines.def_stock_features].values
                 labels = test_df['labels'].values
                 for i in range(num_historical_days, len(test_df), 1):              #感觉步长1是ok的
                     starti = i-num_historical_days
@@ -108,7 +113,7 @@ class TrainXGBBoost:
         test = xgb.DMatrix(self.test_data, self.test_labels)
 
         watchlist = [(train, 'train'), (test, 'test')]
-        clf = xgb.train(params, train, 10000, evals=watchlist, early_stopping_rounds=1000)
+        clf = xgb.train(params, train, 10000, evals=watchlist, early_stopping_rounds=250)
         joblib.dump(clf, 'models/clf.pkl')
         ppp = clf.predict(test, iteration_range=(0, clf.best_iteration + 1))
         lll = lambda x: int(x[1] > 0.5)
@@ -119,5 +124,5 @@ class TrainXGBBoost:
         #xgb.plot_importance(clf)
 
 
-boost_model = TrainXGBBoost(num_historical_days=20, days=10, pct_change=0)  #国内股市波动比较小，pct_change不能设置太大，
+boost_model = TrainXGBBoost(num_historical_days=defines.def_num_historical_days, days=defines.def_predict_days, pct_change=0)  #国内股市波动比较小，pct_change不能设置太大，
 boost_model.train()

@@ -5,6 +5,8 @@ from dateutil.parser import parse
 import threading
 
 #assert 'QUANDL_KEY' in os.environ
+import defines
+
 quandl_api_key = ''
 
 FIELD_DATE = 'trade_date'
@@ -13,6 +15,8 @@ import tushare as ts
 
 ts.set_token('51295be6098fe565f6f727019e280ba4821ad5554b551c311bc33ae3')
 pro = ts.pro_api()
+
+csi = pro.index_basic(market = 'SSE')
 
 class nasdaq():
 	def __init__(self):
@@ -32,8 +36,11 @@ class nasdaq():
 		return symbols
 
 def download(i, symbol, url, output):
-	df1 = ts.pro_bar(ts_code=url, adj='qfq', start_date="19880101", end_date="20020101")
+	df1 = ts.pro_bar(ts_code=url, adj='qfq', start_date="19890101", end_date="20020101")
 	df2 = ts.pro_bar(ts_code=url, adj='qfq', start_date="20020101", end_date="20211111")
+
+	#df1 = pro.index_daily(ts_code=url, start_date='19890101', end_date='20020101')   #取指数接口，没权限
+	#df2 = pro.index_daily(ts_code=url, start_date='20020101', end_date='20211111')
 
 	df = df2
 
@@ -65,11 +72,13 @@ def download(i, symbol, url, output):
 '''
 
 def download_all():
+	nas = nasdaq()
+
 	if not os.path.exists('./stock_data'):
 	    os.makedirs('./stock_data')
 
-	nas = nasdaq()
-	for i, symbol in enumerate(nas.symbols()):
+	stockArr = defines.def_stock_arr
+	for i, symbol in enumerate(stockArr):
 		url = nas.build_url(symbol)
 		download(i, symbol, url, nas.output)
 
